@@ -39,7 +39,9 @@ public class Exercise2 {
          * @param mapping Функция преобразования элементов.
          */
         public <R> MapHelper<R> map(Function<T, R> mapping) {
-            throw new UnsupportedOperationException();
+            List<R> target = new ArrayList<>();
+            source.forEach(e -> target.add(mapping.apply(e)));
+            return new MapHelper<>(target);
         }
 
         /**
@@ -49,7 +51,9 @@ public class Exercise2 {
          * @param flatMapping Функция преобразования элементов.
          */
         public <R> MapHelper<R> flatMap(Function<T, List<R>> flatMapping) {
-            throw new UnsupportedOperationException();
+            List<R> target = new ArrayList<>();
+            source.forEach(e -> target.addAll(flatMapping.apply(e)));
+            return new MapHelper<>(target);
         }
     }
 
@@ -57,12 +61,12 @@ public class Exercise2 {
     public void mapEmployeesToLengthOfTheirFullNamesUsingMapHelper() {
         List<Employee> employees = getEmployees();
 
-        List<Integer> lengths = null;
-        // TODO                 MapHelper.from(employees)
-        // TODO                          .map(Employee -> Person)
-        // TODO                          .map(Person -> String(full name))
-        // TODO                          .map(String -> Integer(length of string))
-        // TODO                          .getMapped();
+        List<Integer> lengths =
+                       MapHelper.from(employees)
+                                  .map(Employee::getPerson)
+                                  .map(Person::getFullName)
+                                  .map(String::length)
+                                  .getMapped();
         assertEquals(Arrays.asList(14, 19, 14, 15, 14, 16), lengths);
     }
 
@@ -70,13 +74,19 @@ public class Exercise2 {
     public void mapEmployeesToCodesOfLetterTheirPositionsUsingMapHelper() {
         List<Employee> employees = getEmployees();
 
-        List<Integer> codes = null;
-        // TODO               MapHelper.from(employees)
-        // TODO                        .flatMap(Employee -> JobHistoryEntry)
-        // TODO                        .map(JobHistoryEntry -> String(position))
-        // TODO                        .flatMap(String -> Character(letter))
-        // TODO                        .map(Character -> Integer(code letter)
-        // TODO                        .getMapped();
+        List<Integer> codes =
+                       MapHelper.from(employees)
+                                .flatMap(Employee::getJobHistory)
+                                .map(JobHistoryEntry::getPosition)
+                                .flatMap(s -> {
+                                    List<Character> target = new ArrayList<>();
+                                    for (char c: s.toCharArray()) {
+                                        target.add(c);
+                                    }
+                                    return target;
+                                })
+                               .map(character -> (int) character)
+                                .getMapped();
         assertEquals(calcCodes("dev", "dev", "tester", "dev", "dev", "QA", "QA", "dev", "tester", "tester", "QA", "QA", "QA", "dev"), codes);
     }
 
