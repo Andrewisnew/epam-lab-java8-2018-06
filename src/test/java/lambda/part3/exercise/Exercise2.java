@@ -41,7 +41,7 @@ public class Exercise2 {
         public <R> MapHelper<R> map(Function<T, R> mapping) {
             List<R> target = new ArrayList<>();
             source.forEach(e -> target.add(mapping.apply(e)));
-            return new MapHelper<>(target);
+            return from(target);
         }
 
         /**
@@ -53,7 +53,7 @@ public class Exercise2 {
         public <R> MapHelper<R> flatMap(Function<T, List<R>> flatMapping) {
             List<R> target = new ArrayList<>();
             source.forEach(e -> target.addAll(flatMapping.apply(e)));
-            return new MapHelper<>(target);
+            return from(target);
         }
     }
 
@@ -78,18 +78,19 @@ public class Exercise2 {
                        MapHelper.from(employees)
                                 .flatMap(Employee::getJobHistory)
                                 .map(JobHistoryEntry::getPosition)
-                                .flatMap(s -> {
-                                    List<Character> target = new ArrayList<>();
-                                    for (char c: s.toCharArray()) {
-                                        target.add(c);
-                                    }
-                                    return target;
-                                })
+                                .flatMap(Exercise2::extractListOfCharacters)
                                .map(character -> (int) character)
                                 .getMapped();
         assertEquals(calcCodes("dev", "dev", "tester", "dev", "dev", "QA", "QA", "dev", "tester", "tester", "QA", "QA", "QA", "dev"), codes);
     }
+    private static List<Character> extractListOfCharacters(String string){
+            List<Character> target = new ArrayList<>();
+            for (char c: string.toCharArray()) {
+                target.add(c);
+            }
+            return target;
 
+    }
     private static List<Integer> calcCodes(String...strings) {
         List<Integer> codes = new ArrayList<>();
         for (String string : strings) {
