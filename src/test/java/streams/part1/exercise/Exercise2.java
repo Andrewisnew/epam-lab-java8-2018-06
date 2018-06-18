@@ -1,5 +1,8 @@
 package streams.part1.exercise;
 
+import java.util.Comparator;
+import java.util.Optional;
+import java.util.OptionalDouble;
 import lambda.data.Employee;
 import lambda.data.JobHistoryEntry;
 import lambda.data.Person;
@@ -18,7 +21,12 @@ public class Exercise2 {
     public void calcAverageAgeOfEmployees() {
         List<Employee> employees = getEmployees();
 
-        Double expected = null;
+        Double expected = employees
+            .stream()
+            .map(Employee::getPerson)
+            .mapToDouble(Person::getAge)
+            .average()
+            .getAsDouble();
 
         assertEquals(33.66, expected, 0.1);
     }
@@ -27,7 +35,11 @@ public class Exercise2 {
     public void findPersonWithLongestFullName() {
         List<Employee> employees = getEmployees();
 
-        Person expected = null;
+        Person expected = employees
+            .stream()
+            .map(Employee::getPerson)
+            .max(Comparator.comparing(person -> person.getFullName().length()))
+            .get();
 
         assertEquals(expected, employees.get(1).getPerson());
     }
@@ -36,7 +48,13 @@ public class Exercise2 {
     public void findEmployeeWithMaximumDurationAtOnePosition() {
         List<Employee> employees = getEmployees();
 
-        Employee expected = null;
+        Employee expected = employees
+            .stream()
+            .max(Comparator.comparing(Employee::getJobHistory,
+                Comparator.comparing(jobHistoryEntry -> jobHistoryEntry.stream()
+                .map(JobHistoryEntry::getDuration)
+                .max(Integer::compareTo).get())))
+            .get();
 
         assertEquals(expected, employees.get(4));
     }
@@ -49,8 +67,14 @@ public class Exercise2 {
     @Test
     public void calcTotalSalaryWithCoefficientWorkExperience() {
         List<Employee> employees = getEmployees();
-
-        Double expected = null;
+        final int SALARY = 75_000;
+        Double expected = employees
+            .stream()
+            .map(Employee::getJobHistory)
+            .map(jobHistory -> jobHistory.get(jobHistory.size() - 1))
+            .mapToDouble(jobHistoryEntry ->
+                jobHistoryEntry.getDuration() > 3 ? SALARY * 1.2 : SALARY)
+            .sum();
 
         assertEquals(465000.0, expected, 0.001);
     }
