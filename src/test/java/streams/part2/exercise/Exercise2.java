@@ -197,7 +197,7 @@ public class Exercise2 {
                          entry -> entry.map(PersonEmployerDuration::getPerson).orElseThrow(IllegalStateException::new))));
         Map<String, Person> expected = new HashMap<>();
         expected.put("EPAM", employees.get(4).getPerson());
-        expected.put("google", employees.get(1).getPerson());
+        expected.put("google", employees.get(0).getPerson());
         expected.put("yandex", employees.get(2).getPerson());
         expected.put("mail.ru", employees.get(2).getPerson());
         expected.put("T-Systems", employees.get(5).getPerson());
