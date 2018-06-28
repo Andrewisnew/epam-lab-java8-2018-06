@@ -6,6 +6,7 @@ import lambda.data.Person;
 import org.junit.Test;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 
@@ -64,11 +65,19 @@ public class Exercise2 {
      *    "T-Systems" -> [ {Анна Светличная 21} ]
      * ]
      */
+
     @Test
     public void employersStuffList() {
         List<Employee> employees = getEmployees();
 
-        Map<String, Set<Person>> result = null;
+        Map<String, Set<Person>> result = employees
+            .stream()
+            .flatMap(employee -> employee
+                .getJobHistory()
+                .stream()
+                .map(jobHistoryEntry -> new PersonEmployerPair(employee.getPerson(), jobHistoryEntry.getEmployer())))
+            .collect(Collectors.groupingBy(PersonEmployerPair::getEmployer,
+                     Collectors.mapping(PersonEmployerPair::getPerson, Collectors.toSet())));
 
         Map<String, Set<Person>> expected = new HashMap<>();
         expected.put("yandex", new HashSet<>(Collections.singletonList(employees.get(2).getPerson())));
@@ -142,8 +151,14 @@ public class Exercise2 {
     public void indexByFirstEmployer() {
         List<Employee> employees = getEmployees();
 
-        Map<String, Set<Person>> result = null;
-
+        Map<String, Set<Person>> result =
+        employees
+            .stream()
+            .filter(employee -> employee.getJobHistory().size() > 0)
+            .map(employee -> new PersonEmployerPair(employee.getPerson(),
+                 employee.getJobHistory().get(0).getEmployer()))
+            .collect(Collectors.groupingBy(PersonEmployerPair::getEmployer,
+                     Collectors.mapping(PersonEmployerPair::getPerson, Collectors.toSet())));
         Map<String, Set<Person>> expected = new HashMap<>();
         expected.put("yandex", new HashSet<>(Collections.singletonList(employees.get(2).getPerson())));
         expected.put("EPAM", new HashSet<>(Arrays.asList(
@@ -166,8 +181,20 @@ public class Exercise2 {
     public void greatestExperiencePerEmployer() {
         List<Employee> employees = getEmployees();
 
-        Map<String, Person> collect = null;
-
+        Map<String, Person> collect =
+        employees
+            .stream()
+            .flatMap(employee -> employee.getJobHistory()
+                .stream()
+                .collect(Collectors.groupingBy(JobHistoryEntry::getEmployer,
+                    Collectors.summingInt(JobHistoryEntry::getDuration)))
+                .entrySet()
+                .stream()
+                .map(entry -> new PersonEmployerDuration(employee.getPerson(), entry.getKey(), entry.getValue())))
+            .collect(Collectors.groupingBy(PersonEmployerDuration::getEmployer,
+                     Collectors.collectingAndThen(
+                         Collectors.maxBy(Comparator.comparingInt(PersonEmployerDuration::getDuration)),
+                         entry -> entry.map(PersonEmployerDuration::getPerson).orElseThrow(IllegalStateException::new))));
         Map<String, Person> expected = new HashMap<>();
         expected.put("EPAM", employees.get(4).getPerson());
         expected.put("google", employees.get(1).getPerson());
@@ -219,4 +246,37 @@ public class Exercise2 {
                         ))
         );
     }
+
+
+    private static class PersonEmployerPair {
+        private Person person;
+        private String employer;
+
+        public PersonEmployerPair(Person person, String employer) {
+            this.person = person;
+            this.employer = employer;
+        }
+
+        public Person getPerson() {
+            return person;
+        }
+
+        public String getEmployer() {
+            return employer;
+        }
+    }
+    private static class PersonEmployerDuration extends PersonEmployerPair{
+        private int duration;
+
+        public PersonEmployerDuration(Person person, String employer, int duration) {
+            super(person, employer);
+            this.duration = duration;
+        }
+
+        public int getDuration() {
+            return duration;
+        }
+    }
+
+
 }
