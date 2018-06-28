@@ -3,7 +3,10 @@ package streams.part2.exercise;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 
@@ -18,7 +21,17 @@ public class Exercise4 {
      * @return Список отобранных слов (в нижнем регистре).
      */
     private List<String> getFrequentlyOccurringWords(String text, int numberWords) {
-        throw new UnsupportedOperationException();
+        return Arrays.stream(text.split("\\s+"))
+            .map(String::toLowerCase)
+            .collect(Collectors.groupingBy(value -> value, Collectors.counting()))
+            .entrySet()
+            .stream()
+            .sorted(Comparator.<Map.Entry<String, Long>>comparingLong(Map.Entry::getValue)
+                .reversed()
+                .thenComparing(Map.Entry::getKey))
+            .limit(numberWords)
+            .map(Map.Entry::getKey)
+            .collect(Collectors.toList());
     }
 
     @Test
