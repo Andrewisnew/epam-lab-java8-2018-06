@@ -69,9 +69,8 @@ public class Exercise1 {
     @SuppressWarnings("Duplicates")
     public void groupPersonsByFirstPositionUsingToMap() {
         List<Employee> employees = getEmployees();
-        Function<Employee, Set<Person>> f = employee -> new HashSet<>(
-            Collections.singletonList(employee.getPerson()));
         Map<String, Set<Person>> result = employees.stream()
+            .filter(employee -> employee.getJobHistory().size() > 0)
             .collect(Collectors.toMap(employee -> employee.getJobHistory().get(0).getPosition(), employee -> new HashSet<>(
                 Collections.singletonList(employee.getPerson())), (leftPersons, rightPersons) -> {
                 leftPersons.addAll(rightPersons);
