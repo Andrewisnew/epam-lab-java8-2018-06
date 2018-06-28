@@ -71,6 +71,7 @@ public class Exercise2 {
         Double expected = employees
             .stream()
             .map(Employee::getJobHistory)
+            .filter(entry -> entry.size() > 0)
             .map(jobHistory -> jobHistory.get(jobHistory.size() - 1))
             .mapToDouble(jobHistoryEntry ->
                 jobHistoryEntry.getDuration() > 3 ? SALARY * 1.2 : SALARY)
