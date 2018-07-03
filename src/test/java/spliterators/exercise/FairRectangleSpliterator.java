@@ -10,32 +10,57 @@ import java.util.function.IntConsumer;
  */
 public class FairRectangleSpliterator extends Spliterators.AbstractIntSpliterator {
 
+    private static final long TRESHHOLD = 7;
     /**
      *  0  1  2  3  4
      *  5  6  / 7  8  9
      * 10 11 12 13 14
      */
+
+    private final int[][] data;
+    private int startInclusive;
+    private int endExlusive;
+
     public FairRectangleSpliterator(int[][] data) {
-        super(0, 0);
+        this(data, 0, data.length * data[0].length);
+
+    }
+
+    private FairRectangleSpliterator(int[][] data, int startInclusive, int endExlusive){
+        super(endExlusive - startInclusive, SIZED | ORDERED | NONNULL | IMMUTABLE);
+        this.data = data;
+        this.startInclusive = startInclusive;
+        this.endExlusive = endExlusive;
     }
 
     @Override
     public OfInt trySplit() {
-        throw new UnsupportedOperationException();
+        if(estimateSize() < TRESHHOLD){
+            return null;
+        }
+        int middle = startInclusive + (int)(estimateSize() / 2);
+        return new FairRectangleSpliterator(data, startInclusive, startInclusive = middle);
     }
 
     @Override
     public long estimateSize() {
-        throw new UnsupportedOperationException();
+        return endExlusive - startInclusive;
     }
 
     @Override
     public boolean tryAdvance(IntConsumer action) {
-        throw new UnsupportedOperationException();
+        if(startInclusive == endExlusive) {
+            return false;
+        }
+        action.accept(data[startInclusive / data[0].length][startInclusive % data[0].length]);
+        startInclusive++;
+        return true;
     }
 
     @Override
     public void forEachRemaining(IntConsumer action) {
-        throw new UnsupportedOperationException();
+        for (; startInclusive != endExlusive; startInclusive++){
+            action.accept(data[startInclusive / data[0].length][startInclusive % data[0].length]);
+        }
     }
 }
