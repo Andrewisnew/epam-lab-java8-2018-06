@@ -26,10 +26,10 @@ public class Exercise3 {
     public void extractEvenNumberedCharactersToNewString() {
         String source = "abcdefghijklm";
 
-        String result = source
-            .chars()
-            .filter(i -> (i & 1) == 1)
-            .mapToObj(value -> Character.toString((char)value))
+        String result = IntStream.iterate(0, i -> i + 2)
+            .limit((source.length() + 1) / 2)
+            .mapToObj(source::charAt)
+            .map(String::valueOf)
             .collect(Collectors.joining());
         assertEquals("acegikm", result);
     }
